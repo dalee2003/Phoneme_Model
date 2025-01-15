@@ -63,6 +63,7 @@ def extract_mfcc(wav_path, phn_path, dr_folder, folder_name, output_dir, fmax=80
             plt.savefig(image_path, bbox_inches='tight', pad_inches=-0.1)
             plt.close()
 
+#Training Section
 print("starting timit train\n")
 
 timit_path = 'TIMIT/TRAIN'  # Replace with your TIMIT dataset root path
@@ -88,6 +89,8 @@ for dr_folder in range(1, 9):  # From DR1 to DR8
                         extract_mfcc(wav_path, phn_path, dr_folder, root[-5:], output_directory, 8000, 40)
 
 print("done with timit train\n")
+
+#Testing Section
 print("starting timit test\n")
 
 timit_path = 'TIMIT\TEST'  # Replace with your TIMIT dataset root path
