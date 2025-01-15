@@ -5,6 +5,7 @@ import librosa.display
 import matplotlib.pyplot as plt
 from scipy import signal
 
+#HPF for Preprocessing
 fc = 80 # cut off in Hertz (cancel background noise)
 fs =  16000 # all TIMIT files are 16 kHz which is the sr file. 
 b, a = signal.butter(5, fc, btype='high', analog = False, fs=fs)
