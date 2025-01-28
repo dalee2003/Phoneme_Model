@@ -1,4 +1,5 @@
-#Running CNN model based on your own voice
+#Running CNN model based on your own voice. 
+#This is just the execution file. Model itself is not on here. 
 
 import os
 import sounddevice as sd
@@ -19,7 +20,7 @@ FMAX = 8000          # Max frequency for Mel spectrogram
 MODEL_PATH = 'mdl_12_28_24_02_03_loss_0.75_acc_0.76.h5'  # Path to your trained model
 TEMP_DIR = 'temp_audio_segments'  # Temporary directory for spectrograms
 
-# Load the trained model
+# Load the trained CNN model in
 model = load_model(MODEL_PATH)
 
 phonemes_list = ['iy', 'ih', 'eh', 'ae', 'ah', 'uw', 'uh', 'aa', 'ey', 'ay', 'oy', 
