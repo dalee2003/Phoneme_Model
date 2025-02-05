@@ -41,7 +41,7 @@ phoneme_map = {
     'dcl': 'h#', 'gcl': 'h#', 'h#': 'h#', '#h': 'h#', 'pau': 'h#', 'epi': 'h#', 'ax-h': 'ah', 'q': 'h#'
 }
 
-def extract_mfcc(wav_path, phn_path, dr_folder, folder_name, output_dir, fmax=8000, nMel=40, nfft=2048):
+def extract_melspectrogram(wav_path, phn_path, dr_folder, folder_name, output_dir, fmax=8000, nMel=40, nfft=2048):
     # This function extracts MFCC (Mel-Frequency Cepstral Coefficients) from an audio file and 
     # generates mel spectrogram images for each phoneme segment. These images are saved in an output folder.
     
@@ -121,7 +121,7 @@ def process_dr_folder(dr_folder_path, dr_folder, output_dir):
                 if os.path.exists(phn_path):
                     folder_name = os.path.basename(root)
                     print(f"Processing: {wav_path} in DR{dr_folder}, folder: {folder_name}")
-                    extract_mfcc(wav_path, phn_path, dr_folder, folder_name, output_dir)
+                    extract_melspectrogram(wav_path, phn_path, dr_folder, folder_name, output_dir)
 
 def process_dataset(timit_path, dr_range, output_directory):
     # This function spawns a separate process for each DR folder in the dataset, allowing
