@@ -1,5 +1,5 @@
 """
-This script extracts Mel-Frequency Cepstral Coefficients (MFCC) from audio files in the TIMIT dataset 
+This script extracts WAV and PHN files in the TIMIT dataset 
 and generates mel spectrogram images for each phoneme segment. The images are saved in a specified 
 output directory, organized by phoneme. Parallel processing is used to handle multiple directories 
 simultaneously for efficiency.
@@ -42,7 +42,7 @@ phoneme_map = {
 }
 
 def extract_melspectrogram(wav_path, phn_path, dr_folder, folder_name, output_dir, fmax=8000, nMel=40, nfft=2048):
-    # This function extracts MFCC (Mel-Frequency Cepstral Coefficients) from an audio file and 
+    # This function extracts Mel Spectrograms from an audio file and 
     # generates mel spectrogram images for each phoneme segment. These images are saved in an output folder.
     
     # Parameters:
@@ -106,7 +106,7 @@ def extract_melspectrogram(wav_path, phn_path, dr_folder, folder_name, output_di
 
 def process_dr_folder(dr_folder_path, dr_folder, output_dir):
     # This function processes all .WAV files and their corresponding .PHN files in a given directory.
-    # It extracts MFCCs and saves the spectrograms as images in the output directory.
+    # It extracts Mel Spectrograms and saves the spectrograms as images in the output directory.
     
     # Parameters:
     # dr_folder_path (str): Path to the current DR folder in the dataset.
@@ -137,7 +137,7 @@ def process_dataset(timit_path, dr_range, output_directory):
         dr_folder_name = f'DR{dr}' # Format the DR folder name
         dr_folder_path = os.path.join(timit_path, dr_folder_name)
         if os.path.isdir(dr_folder_path):
-            # Create a new process to handle the extraction of MFCCs for this folder
+            # Create a new process to handle the extraction of Mel Spectrograms for this folder
             proc = multiprocessing.Process(
                 target=process_dr_folder,
                 args=(dr_folder_path, dr, output_directory)
@@ -157,18 +157,18 @@ if __name__ == '__main__':
 
     # Process the TRAIN dataset (DR1 to DR8)
     timit_train_path = 'TIMIT/TRAIN'  # Path to the TRAIN dataset
-    train_output_directory = 'timit_mfcc_images'  # Output directory for TRAIN
+    train_output_directory = 'timit_mel_images'  # Output directory for TRAIN
     print("Starting TRAIN dataset processing...")
     process_dataset(timit_train_path, range(1, 9), train_output_directory)
     
     # Process the TEST dataset (DR1 to DR4)
     timit_test_path = 'TIMIT/TEST'  # Path to the TEST dataset
-    test_output_directory = 'timit_mfcc_images_test'  # Output directory for TEST
+    test_output_directory = 'timit_mel_images_test'  # Output directory for TEST
     print("Starting TEST dataset processing...")
     process_dataset(timit_test_path, range(1, 5), test_output_directory)
 
     # # Process the TEST dataset (DR5 to DR8)
     # timit_test_path = 'TIMIT/TEST'  # Path to the TEST dataset
-    # test_output_directory = 'timit_mfcc_images_validation'  # Output directory for TEST
+    # test_output_directory = 'timit_mel_images_validation'  # Output directory for TEST
     # print("Starting TEST dataset processing...")
     # process_dataset(timit_test_path, range(5, 9), test_output_directory)
