@@ -25,7 +25,7 @@ from tensorflow.keras.preprocessing.image import img_to_array, load_img
 from scipy.io.wavfile import write
 
 # Load the trained model for phoneme classification
-MODEL_PATH = 'mdl_02_03_25_20_20_loss_0.70_acc_0.78.h5'  # Path to the trained model
+MODEL_PATH = 'mdl_02_05_25_21_09_loss_0.67_acc_0.78.h5'  # Path to the trained model
 model = load_model(MODEL_PATH)
 
 
@@ -37,13 +37,14 @@ TEMP_DIR = 'temp_audio_segments'  # Temporary directory for spectrograms
 SAMPLE_RATE = 16000  # Sample rate in Hz (TIMIT dataset uses 16k Hz)
 RECORDING_DURATION = 2  # Duration of recording in seconds (Records audio to be processed then ran through model)
 SEGMENT_DURATION = 0.1  # Segment length in seconds (Length of segment of audio to generate mel spectrogram on)
-HOP_LENGTH = 0.03  # Hop length in seconds 
+SEG_HOP_LENGTH = 0.03  # Segment hop length in seconds 
 
 
 # Mel Spectrogram parameters 
 N_MELS = 40  # Number of Mel bands
 FMAX = 8000  # Max frequency for Mel spectrogram
-NFFT = 2048  # FFT window size
+NFFT = 1024  # FFT window size
+HOPLENGTH = 256 
 
 
 # List of 39 TIMIT phoneme classes, mapped from 61 phonemes (based on https://www.intechopen.com/chapters/15948)
@@ -84,24 +85,24 @@ def save_audio(audio, path, sample_rate):
     write(path, sample_rate, (audio * 32767).astype(np.int16))  # Save as 16-bit PCM WAV
 
 
-def segment_audio(audio, sample_rate, segment_duration, hop_length):
+def segment_audio(audio, sample_rate, segment_duration, seg_hop_length):
     """
     Splits the audio into overlapping segments.
 
     Input audio is split into length defined by 'segment_duration' (constant defined above: currently set as 100ms)
 
-    Amount of overlap is defined by 'hop_length' (constant defined above: currently set as 30ms)
+    Amount of overlap is defined by 'seg_hop_length' (constant defined above: currently set as 30ms)
 
     :param audio: NumPy array of the recorded audio
     :param sample_rate: Sampling rate in Hz
     :param segment_duration: Duration of each segment in seconds
-    :param hop_length: Overlapping length in seconds
+    :param seg_hop_length: Overlapping length in seconds
     :return: List of segmented audio arrays
     """
     segment_samples = int(segment_duration * sample_rate)
 
     # Convert hop length from seconds to samples 
-    hop_samples = int(hop_length * sample_rate)  
+    hop_samples = int(seg_hop_length * sample_rate)  
 
     # Generate segments using a sliding window
     segments = [audio[i:i + segment_samples] for i in range(0, len(audio) - segment_samples + 1, hop_samples)]
@@ -118,7 +119,7 @@ def generate_and_save_mel_spectrogram(segment, sr, output_dir, index):
     :return: File path of the saved spectrogram image
     """
     # Generate Mel spectrogram
-    S = librosa.feature.melspectrogram(y=segment, sr=sr, n_mels=N_MELS, n_fft=NFFT, fmax=FMAX)
+    S = librosa.feature.melspectrogram(y=segment, sr=sr, n_mels=N_MELS, n_fft=NFFT, hop_length=HOPLENGTH, fmax=FMAX)
     S_dB = librosa.amplitude_to_db(S, ref=np.max)
 
     # Plot and save the spectrogram as an image
@@ -165,7 +166,7 @@ def main():
 
 
     # Segment audio into smaller chunks
-    segments = segment_audio(audio, SAMPLE_RATE, SEGMENT_DURATION, HOP_LENGTH)
+    segments = segment_audio(audio, SAMPLE_RATE, SEGMENT_DURATION, SEG_HOP_LENGTH)
 
 
     # Create temporary directory for spectrograms
@@ -181,7 +182,7 @@ def main():
     for i, segment in enumerate(segments):
         # Generate and save spectrogram
         image_path = generate_and_save_mel_spectrogram(segment, SAMPLE_RATE, TEMP_DIR, i)
-        
+
 
         # Predict phoneme using the model
         predicted_class, probabilities = predict_phoneme(image_path, model)
