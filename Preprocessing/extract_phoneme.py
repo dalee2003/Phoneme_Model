@@ -41,7 +41,8 @@ phoneme_map = {
     'dcl': 'h#', 'gcl': 'h#', 'h#': 'h#', '#h': 'h#', 'pau': 'h#', 'epi': 'h#', 'ax-h': 'ah', 'q': 'h#'
 }
 
-def extract_melspectrogram(wav_path, phn_path, dr_folder, folder_name, output_dir, fmax=8000, nMel=40, nfft=2048):
+###CHANGES: using FFT=1024 samples (64ms) and HOPLENGTH=256 samples (16ms)###
+def extract_melspectrogram(wav_path, phn_path, dr_folder, folder_name, output_dir, fmax=8000, nMel=40, nfft=1024, hop_len=256):
     # This function extracts Mel Spectrograms from an audio file and 
     # generates mel spectrogram images for each phoneme segment. These images are saved in an output folder.
     
@@ -85,7 +86,7 @@ def extract_melspectrogram(wav_path, phn_path, dr_folder, folder_name, output_di
                 y_segment = np.pad(y_segment, (pad_front, pad_back), mode='constant')
             
             # Generate the mel spectrogram for the phoneme segment
-            S = librosa.feature.melspectrogram(y=y_segment, sr=sr, n_mels=nMel, n_fft=nfft, fmax=fmax)
+            S = librosa.feature.melspectrogram(y=y_segment, sr=sr, n_mels=nMel, n_fft=nfft, hop_length=hop_len, fmax=fmax)
             S_dB = librosa.amplitude_to_db(S, ref=np.max)
             
             # Create a new figure and axes using the object-oriented interface
@@ -167,8 +168,8 @@ if __name__ == '__main__':
     print("Starting TEST dataset processing...")
     process_dataset(timit_test_path, range(1, 5), test_output_directory)
 
-    # # Process the TEST dataset (DR5 to DR8)
+    # Process the TEST dataset (DR5 to DR8)
     # timit_test_path = 'TIMIT/TEST'  # Path to the TEST dataset
-    # test_output_directory = 'timit_mel_images_validation'  # Output directory for TEST
+    # test_output_directory = 'timit_mel_images_tes'  # Output directory for TEST
     # print("Starting TEST dataset processing...")
     # process_dataset(timit_test_path, range(5, 9), test_output_directory)
