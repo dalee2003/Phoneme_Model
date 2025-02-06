@@ -27,7 +27,7 @@ nrow, ncol = 200, 200 # for reshaping images to 200x200 pixels before being fed 
 batch_size_val = 5  # Batch size for test: how mnay images are processed at once 
 
 # Load the trained model
-model_path = "mdl_02_03_25_20_20_loss_0.70_acc_0.78.h5"  # file where trained model is stored
+model_path = "mdl_02_05_25_21_09_loss_0.67_acc_0.78.h5"  # file where trained model is stored
 model = load_model(model_path) # loads the pre-trained model 
 
 # Define ImageDataGenerator for test data (only rescaling is applied)
