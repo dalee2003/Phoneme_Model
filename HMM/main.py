@@ -12,7 +12,7 @@ from SimCNNdata import ZEROsimData, ONEsimData, TWOsimData, THREEsimData, FOURsi
 from SimCNNdata import SIXsimData, SEVENsimData, EIGHTsimData, NINEsimData
 
 #define hop time of CNN as macro:
-HOPTIME = 0.030  # seconds - this is our frame rate or hop rate for the CNN
+HOPTIME = 0.032  # seconds - this is our frame rate or hop rate for the CNN
 
 # Create the HMM models
 numbermodels = CreateHMMModels(NumberModel, avephonetimes, phonepriors, HOPTIME)
