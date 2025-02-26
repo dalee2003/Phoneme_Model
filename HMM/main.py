@@ -11,6 +11,8 @@ from CNNHMMrecog import HMMrec
 from SimCNNdata import ZEROsimData, ONEsimData, TWOsimData, THREEsimData, FOURsimData, FIVEsimData
 from SimCNNdata import SIXsimData, SEVENsimData, EIGHTsimData, NINEsimData
 
+import time
+start_time = time.time()
 #define hop time of CNN as macro:
 HOPTIME = 0.032  # seconds - this is our frame rate or hop rate for the CNN
 
@@ -35,8 +37,11 @@ phoneprobmatrixfromcnn = FOURsimData
 #phoneprobmatrixfromcnn = EIGHTsimData
 #phoneprobmatrixfromcnn = NINEsimData
 
-ID = 'No Command'
+#initialize ID and decision:
+ID = 'No Command' 
 decision = -1
+#ID not found => decision = -1
+#ID is the Digit Said
 
 # loop through all of the cnn vectors
 for phoneprobframe in phoneprobmatrixfromcnn:
@@ -44,9 +49,13 @@ for phoneprobframe in phoneprobmatrixfromcnn:
     if decision != 0:
         break
 
-
-if decision <= 0:  #either command not found or ran out of frames
+if decision <= 0:  #either command not found or ran out of frames 
     print('Number not found\n')
-else : # a command was found
+else : # a command was found (decision = 1)
     print('Command Recognized: ' + ID)
+#ran out of frames (couldn't make a decision in given frames) => decision = 0
+#made decision => decision = 1
+
+end = time.time()
+print("--- %s seconds ---" % (end - start_time))
 

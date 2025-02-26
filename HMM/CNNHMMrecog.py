@@ -14,9 +14,9 @@ import copy
 def CreateHMMModels(phonemodel, avephonetimes, phonepriors, hoptime):
     model = {}  #make dictionary called model
     # loop through all the models
-    for m in phonemodel:
-        model[m] = {}                       # create a dictionary
-        model[m]['states'] = phonemodel[m]  # set 'states' to the phone definitions of this model
+    for m in phonemodel: # for each state
+        model[m] = {}                       # create a dictionary for each state, ZERO, ONE, TWO, etc.
+        model[m]['states'] = phonemodel[m]  # set 'states' to the phone definitions of this model (Ex. ONE = SIL, W, AH, N, SIL)
         
         # self transition of each state is p = 1 -(1/L) where L is the expected length of the phoneme (in frames)
         # so p = 1 - (1/(avephonetimes/hoptime)) where avephonetimes/hoptime converts from time to frames
@@ -56,6 +56,10 @@ def CreateAndInitModelMemory(model):
 
 # perform a single update of the models based on the phone probabilities from the CNN
 # for this current frame/hop.
+#Thus, this is frame by frame, whether you want to compute a CNN Vprob and send it in to HMM right away,
+#or wait for the entire CNN to finish and then send the Vprob in one by one, is up to design choice. 
+
+
 # Inputs
 #    model      - the set of HMM models
 #    mem        - the current memory for the set of models
