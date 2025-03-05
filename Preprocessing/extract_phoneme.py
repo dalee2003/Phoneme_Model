@@ -29,6 +29,14 @@ fs = 16000      # sample rate (TIMIT files are 16 kHz)
 # Create a high-pass Butterworth filter with a cutoff at 80Hz
 b, a = signal.butter(5, fc, btype='high', analog=False, fs=fs)
 
+# Mel Spectrogram Constants 
+N_MEL=40        # 40 Mel bins 
+N_FFT=512       # Length of FFT Window 
+HOP_LENGTH=256  # Number of samples between successive frames 
+
+# Targer frame size for Padding (3328 samples = 208ms frame)
+TARGET_LENGTH = 3328
+
 # Mapping from 61 TIMIT phonemes to 39 phonemes
 phoneme_map = {
     'iy': 'iy', 'ih': 'ih', 'eh': 'eh', 'ae': 'ae', 'ix': 'ih', 'ax': 'ah', 'ah': 'ah', 'uw': 'uw',
@@ -41,8 +49,7 @@ phoneme_map = {
     'dcl': 'h#', 'gcl': 'h#', 'h#': 'h#', '#h': 'h#', 'pau': 'h#', 'epi': 'h#', 'ax-h': 'ah', 'q': 'h#'
 }
 
-###CHANGES: using FFT=1024 samples (64ms) and HOPLENGTH=256 samples (16ms)###
-def extract_melspectrogram(wav_path, phn_path, dr_folder, folder_name, output_dir, fmax=8000, nMel=40, nfft=1024, hop_len=256):
+def extract_melspectrogram(wav_path, phn_path, dr_folder, folder_name, output_dir):
     # This function extracts Mel Spectrograms from an audio file and 
     # generates mel spectrogram images for each phoneme segment. These images are saved in an output folder.
     
@@ -52,10 +59,7 @@ def extract_melspectrogram(wav_path, phn_path, dr_folder, folder_name, output_di
     # dr_folder (str): Name of the folder in the dataset (for tracking).
     # folder_name (str): Name of the subfolder containing the .WAV file.
     # output_dir (str): Path to the output directory where images will be saved.
-    # fmax (int): Maximum frequency for the spectrogram.
-    # nMel (int): Number of mel bins for the spectrogram.
-    # nfft (int): Length of FFT window for spectrogram calculation.
-    
+
     # Load audio and apply the high-pass filter
     y, sr = librosa.load(wav_path, sr=None)
     y = signal.lfilter(b, a, y)
@@ -66,32 +70,36 @@ def extract_melspectrogram(wav_path, phn_path, dr_folder, folder_name, output_di
     # Process each phoneme segment defined in the .PHN file
     with open(phn_path, 'r') as phn_file:
         for line in phn_file:
+
             # Parse start, end, and phoneme for each segment
-            
             start, end, phoneme = line.strip().split()
             start, end = int(start), int(end)
             y_segment = y[start:end]
             
             # Map the phoneme to its 39-category equivalent; skip if not in mapping
-            phoneme = phoneme_map.get(phoneme, phoneme)
-            if phoneme not in phoneme_map.values():
-                continue
-            
-            # Pad the segment if it is shorter than the FFT window length
-            target_length = nfft
+            phoneme = phoneme_map.get(phoneme, 'h#')
+
+            # Pad the segment if it is shorter than the TARGET_LENGTH (target segment length)
+            # or if segment is longer, trim
+            target_length = TARGET_LENGTH
             pad_length = target_length - len(y_segment)
-            if pad_length > 0:
+            if pad_length > 0: # make sure shorter phonemes are padded to CNN frame length 
                 pad_front = pad_length // 2
                 pad_back = pad_length - pad_front
                 y_segment = np.pad(y_segment, (pad_front, pad_back), mode='constant')
+            elif pad_length < 0: # if CNN frame is smaller than max phoneme length, trims longer phonemes to match frame
+                trim_front =  (-1 * pad_length) // 2
+                trim_back = (-1 * pad_length) - trim_front
+                y_segment = y_segment[trim_front : len(y_segment) - trim_back]
+                
             
             # Generate the mel spectrogram for the phoneme segment
-            S = librosa.feature.melspectrogram(y=y_segment, sr=sr, n_mels=nMel, n_fft=nfft, hop_length=hop_len, fmax=fmax)
+            S = librosa.feature.melspectrogram(y=y_segment, sr=sr, n_mels=N_MEL, n_fft=N_FFT, hop_length=HOP_LENGTH)
             S_dB = librosa.amplitude_to_db(S, ref=np.max)
             
             # Create a new figure and axes using the object-oriented interface
             fig, ax = plt.subplots(figsize=(3, 3), dpi=100)
-            librosa.display.specshow(S_dB, sr=sr, fmax=fmax, ax=ax)
+            librosa.display.specshow(S_dB, sr=sr, ax=ax)
             ax.set_xticks([])  # Hide the x-axis ticks
             ax.set_yticks([])  # Hide the y-axis ticks
             fig.tight_layout()
@@ -103,7 +111,7 @@ def extract_melspectrogram(wav_path, phn_path, dr_folder, folder_name, output_di
             image_path = os.path.join(phoneme_dir, image_name)
             fig.savefig(image_path, bbox_inches='tight', pad_inches=-0.1)
             plt.close(fig)
-            # print("Added:", image_name) # optional print statement, too many prints slow down the process
+
 
 def process_dr_folder(dr_folder_path, dr_folder, output_dir):
     # This function processes all .WAV files and their corresponding .PHN files in a given directory.
@@ -123,6 +131,7 @@ def process_dr_folder(dr_folder_path, dr_folder, output_dir):
                     folder_name = os.path.basename(root)
                     print(f"Processing: {wav_path} in DR{dr_folder}, folder: {folder_name}")
                     extract_melspectrogram(wav_path, phn_path, dr_folder, folder_name, output_dir)
+
 
 def process_dataset(timit_path, dr_range, output_directory):
     # This function spawns a separate process for each DR folder in the dataset, allowing
