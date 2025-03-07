@@ -1,7 +1,6 @@
 # the phone token list
-phonetokens = ['AA', 'AE', 'AH', 'AW', 'AY', 'B', 'CH', 'D', 'DX', 'DH', 'EH', 'ER', 'EY',
-            'F', 'G', 'HH', 'IH',  'IY', 'JH', 'K', 'L', 'M', 'N', 'NG', 'OW', 'OY', 'P', 'R',
-            'S', 'SH', 'T', 'TH', 'UH', 'UW', 'V', 'W', 'Y', 'Z', 'SIL']
+phonetokens = ['AA', 'AE', 'AH', 'AW', 'AY', 'B', 'CH', 'D', 'DH', 'DX', 'EH', 'ER', 'EY', 'F', 'G', 'H#', 'HH', 
+               'IH', 'IY', 'JH', 'K', 'L', 'M', 'N', 'NG', 'OW', 'OY', 'P', 'R', 'S', 'SH', 'T', 'TH', 'UH', 'UW', 'V', 'W', 'Y', 'Z']
 
 # get the numbered index into the token list so that it can be accessed later
 # Inputs
@@ -18,6 +17,8 @@ def GetPhoneIndex(ptokens):
     return pindex
 
 #Because some of these values are so small we will log all of them to increase the magnitude. 
+#These values were the output of the "phone.analysis.py" script from the "PHN_AVG_LENGTH" project. 
+
 avephonetimes = {
     'AA' : 0.12311517321785476,
     'AE' : 0.14821226857643233,
@@ -57,10 +58,10 @@ avephonetimes = {
     'W'  : 0.0666061703821656,
     'Y'  : 0.0660622084548105,
     'Z'  : 0.08355908759607739,
-    'SIL': 0.5
+    'H#': 0.5
 }
 
-#phone probabilities
+#phone probabilities a priors
 phonepriors = {
     'AA' : 0.04252034305220144,
     'AE' : 0.028306764020594462,
@@ -100,5 +101,5 @@ phonepriors = {
     'W'  : 0.022237487872070708,
     'Y'  : 0.012145634299554542,
     'Z'  : 0.026720395459019993,
-    'SIL': 1     #log(1) = 0 so we set to 1 so we don't worry about it
+    'H#': 1     #log(1) = 0 so we set to 1 so we don't worry about it
 }

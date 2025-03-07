@@ -3,14 +3,14 @@
 # defined by each phoneme in the target word
 
 NumberModel = {
-    "ZERO" : ['SIL','Z', 'IH', 'R', 'OW', 'SIL'],
-    "ONE" : ['SIL','W', 'AH', 'N','SIL'],
-    "TWO" : ['SIL', 'T', 'UW', 'SIL'],
-    "THREE" : ['SIL', 'TH', 'R', 'IY', 'SIL'],
-    "FOUR" : ['SIL', 'F', 'AA', 'R', 'SIL'],
-    "FIVE" : ['SIL', 'F', 'AY', 'V', 'SIL'],
-    "SIX" : ['SIL', 'S', 'IH', 'K', 'S', 'SIL'],
-    "SEVEN" : ['SIL', 'S', 'EH', 'V', 'AH', 'N','SIL'],
-    "EIGHT" : ['SIL', 'EY', 'T', 'SIL'],
-    "NINE" : ['SIL', 'N', 'AY','N','SIL']
+    "ZERO" : ['H#','Z', 'IH', 'R', 'OW', 'H#'],
+    "ONE" : ['H#','W', 'AH', 'N','H#'],
+    "TWO" : ['H#', 'T', 'UW', 'H#'],
+    "THREE" : ['H#', 'TH', 'R', 'IY', 'H#'],
+    "FOUR" : ['H#', 'F', 'AA', 'R', 'H#'],
+    "FIVE" : ['H#', 'F', 'AY', 'V', 'H#'],
+    "SIX" : ['H#', 'S', 'IH', 'K', 'S', 'H#'],
+    "SEVEN" : ['H#', 'S', 'EH', 'V', 'AH', 'N','H#'],
+    "EIGHT" : ['H#', 'EY', 'T', 'H#'],
+    "NINE" : ['H#', 'N', 'AY','N','H#']
 }
