@@ -34,7 +34,7 @@ def CreateHMMModels(phonemodel, avephonetimes, phonepriors, hoptime):
 
 
 # create the memory needed and initialized it to initial values
-#memory is updated every frame
+# memory is updated every frame
 # Inputs
 # model - the set of HMM models
 #
@@ -97,6 +97,10 @@ def HMMrec(model, mem, phoneprobs, phonendx):
 def ComputeObservationProb(model_i, staten, phoneprobs, phonendx):
     # pull the phoneme for the current state from the CNN vector of probs
     B = phoneprobs[phonendx[model_i['states'][staten]]]
+    if B <= 0 : 
+        B = 0.0000000001 
+    #if the probability vector from CNN is negative => set to very small value
+    #float32 for B so min is 10^-45 and max is 10^38 so it is not due to truncation error
     logB = math.log10(B)   # do math in the log domain to maintain precision
     return logB
 
