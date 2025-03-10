@@ -23,29 +23,27 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
 from scipy.io.wavfile import write
+from scipy import signal
 
 # Load the trained model for phoneme classification
-MODEL_PATH = 'mdl_02_05_25_21_09_loss_0.67_acc_0.78.h5'  # Path to the trained model
+MODEL_PATH = 'mdl_02_26_25_23_48_loss_0.74_acc_0.77.h5'
 model = load_model(MODEL_PATH)
-
 
 # Directory to store generated Mel spectrograms
 TEMP_DIR = 'temp_audio_segments'  # Temporary directory for spectrograms
 
-
-# Audio recording parameters
-SAMPLE_RATE = 16000  # Sample rate in Hz (TIMIT dataset uses 16k Hz)
-RECORDING_DURATION = 2  # Duration of recording in seconds (Records audio to be processed then ran through model)
-SEGMENT_DURATION = 0.1  # Segment length in seconds (Length of segment of audio to generate mel spectrogram on)
-SEG_HOP_LENGTH = 0.03  # Segment hop length in seconds 
+# Mel Spectrogram Constants 
+N_MEL=40        # 40 Mel bins 
+N_FFT=512       # Length of FFT Window 
+HOP_LENGTH=256  # Number of samples between successive frames 
 
 
-# Mel Spectrogram parameters 
-N_MELS = 40  # Number of Mel bands
-FMAX = 8000  # Max frequency for Mel spectrogram
-NFFT = 1024  # FFT window size
-HOPLENGTH = 256 
+# High-pass filter parameters
+fc = 80         # cutoff frequency in Hertz
+fs = 16000      # sample rate (TIMIT files are 16 kHz)
 
+# Create a high-pass Butterworth filter with a cutoff at 80Hz
+b, a = signal.butter(5, fc, btype='high', analog=False, fs=fs)
 
 # List of 39 TIMIT phoneme classes, mapped from 61 phonemes (based on https://www.intechopen.com/chapters/15948)
 phonemes_list = ['iy', 'ih', 'eh', 'ae', 'ah', 'uw', 'uh', 'aa', 'ey', 'ay', 'oy', 
@@ -53,7 +51,7 @@ phonemes_list = ['iy', 'ih', 'eh', 'ae', 'ah', 'uw', 'uh', 'aa', 'ey', 'ay', 'oy
             'dh', 'b', 'd', 'dx', 'g', 'p', 't', 'k', 'z', 'sh', 'v', 'f', 'th', 's', 'hh', 'h#']
 
 
-# Mapping from class index to phoneme (e.g. [{0:iy}, {1:ih}, ...])
+# Mapping from class index to phoneme (e.g. [{0:aa}, {1:ae}, ...])
 phoneme_classes = {index: phoneme for index, phoneme in enumerate(sorted(phonemes_list))}
 
 
@@ -99,6 +97,7 @@ def segment_audio(audio, sample_rate, segment_duration, seg_hop_length):
     :param seg_hop_length: Overlapping length in seconds
     :return: List of segmented audio arrays
     """
+    # Convert sample duration from seconds to samples 
     segment_samples = int(segment_duration * sample_rate)
 
     # Convert hop length from seconds to samples 
@@ -106,6 +105,7 @@ def segment_audio(audio, sample_rate, segment_duration, seg_hop_length):
 
     # Generate segments using a sliding window
     segments = [audio[i:i + segment_samples] for i in range(0, len(audio) - segment_samples + 1, hop_samples)]
+
     return segments
 
 
@@ -119,84 +119,36 @@ def generate_and_save_mel_spectrogram(segment, sr, output_dir, index):
     :return: File path of the saved spectrogram image
     """
     # Generate Mel spectrogram
-    S = librosa.feature.melspectrogram(y=segment, sr=sr, n_mels=N_MELS, n_fft=NFFT, hop_length=HOPLENGTH, fmax=FMAX)
+    S = librosa.feature.melspectrogram(y=segment, sr=sr, n_mels=N_MEL, n_fft=N_FFT, hop_length=HOP_LENGTH)
     S_dB = librosa.amplitude_to_db(S, ref=np.max)
 
-    # Plot and save the spectrogram as an image
-    plt.figure(figsize=(3, 3), dpi=100)
-    librosa.display.specshow(S_dB, sr=sr, fmax=FMAX)
-    plt.xticks([])
-    plt.yticks([])
-    plt.tight_layout()
-
-    # Save to output directory
+    # Create a new figure and axes using the object-oriented interface
+    fig, ax = plt.subplots(figsize=(3, 3), dpi=100)
+    librosa.display.specshow(S_dB, sr=sr, ax=ax)
+    ax.set_xticks([])  # Hide the x-axis ticks
+    ax.set_yticks([])  # Hide the y-axis ticks
+    fig.tight_layout()
+    
+    # Create a phoneme-specific subdirectory and save the image
     os.makedirs(output_dir, exist_ok=True)
     image_path = os.path.join(output_dir, f"segment_{index}.png")
-    plt.savefig(image_path, bbox_inches='tight', pad_inches=-0.1)
-    plt.close()
+    fig.savefig(image_path, bbox_inches='tight', pad_inches=-0.1)
+    plt.close(fig)
 
     return image_path
 
 
-def predict_phoneme(image_path, model):
+def predict_phoneme(image_path, model=model):
     """
     Predicts the phoneme using trained model from a Mel spectrogram image generated based on audio input.
     :param image_path: Path to the spectrogram image
     :param model: Trained deep learning model
     :return: Predicted phoneme class index and probabilities
     """
-    img = load_img(image_path, target_size=(200, 200))  # Resize as per model input
+    img = load_img(image_path, target_size=(200, 200, 3))  # Resize as per model input
     img_array = img_to_array(img) / 255.0  # Normalize
     img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
     predictions = model.predict(img_array)
     predicted_class = np.argmax(predictions, axis=1)[0]
-    print('predicted_class: ', predicted_class, 'predictions[0]: ', predictions[0])
     return predicted_class, predictions[0]
 
-
-def main():
-    """
-    Main function to perform phoneme prediction from recorded audio.
-    """
-    print("Starting phoneme prediction...")
-
-    # Record audio input
-    audio = record_audio(RECORDING_DURATION, SAMPLE_RATE)
-    save_audio(audio, 'audio_input.wav', SAMPLE_RATE)  # Save recorded audio
-
-
-    # Segment audio into smaller chunks
-    segments = segment_audio(audio, SAMPLE_RATE, SEGMENT_DURATION, SEG_HOP_LENGTH)
-
-
-    # Create temporary directory for spectrograms
-    os.makedirs(TEMP_DIR, exist_ok=True)
-
-
-    # Process each segment and predict phoneme
-    print("Generating Mel spectrograms and predicting phonemes...")
-    phoneme_lst = []
-    probability_lst = []
-
-
-    for i, segment in enumerate(segments):
-        # Generate and save spectrogram
-        image_path = generate_and_save_mel_spectrogram(segment, SAMPLE_RATE, TEMP_DIR, i)
-
-
-        # Predict phoneme using the model
-        predicted_class, probabilities = predict_phoneme(image_path, model)
-        phoneme = phoneme_classes[predicted_class]
-        probability_lst.append(probabilities)
-        phoneme_lst.append(phoneme)
-        print(f"Segment {i + 1}: Predicted Phoneme: {phoneme}, Probabilities: {probabilities}")
-
-
-    print("Predicted phonemes probability list:", probability_lst)
-    print("Predicted phonemes:", phoneme_lst)
-    
-    print("Finished processing all segments.")
-
-
-if __name__ == '__main__':
-    main()
