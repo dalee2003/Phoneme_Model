@@ -35,11 +35,13 @@ K.clear_session()
 # Create a Sequential model (used for stacking layers in a linear fashion)
 model = Sequential()
 
-# Add the first convolutional layer with 16 filters, 7x7 kernel size, ReLU activation, and same padding
+# Add the first convolutional layer with 16 filters, 7x7 kernel size, ReLU activation, 
+# and same padding (keeps feature map same size as input to avoid losing information at edges)
 model.add(Conv2D(16, (7, 7), activation='relu', padding='same', input_shape=input_shape))
-# Add max pooling layer with 3x3 pool size and stride of 2
+# Add max pooling layer with 3x3 pool size and stride of 2 (fnd max in input for ouput feature map)
 model.add(MaxPooling2D((3, 3), strides=(2, 2), padding='same'))
-# Add batch normalization to stabilize and accelerate training
+# Add batch normalization to stabilize and accelerate training (works by calculating mean and variance
+# and normalizing activation so next layer receives normalized output)
 model.add(BatchNormalization())
 
 # Add a second convolutional layer with 32 filters, 5x5 kernel size, ReLU activation, and same padding
@@ -78,8 +80,8 @@ model.add(BatchNormalization())
 # Add dropout layer to prevent overfitting (50% chance of dropping units during training)
 model.add(Dropout(0.5))
 
-# Output layer with 61 neurons (one for each phoneme class) and softmax activation for multi-class classification
-model.add(Dense(61, activation='softmax'))
+# Output layer with 39 neurons (one for each phoneme class) and softmax activation for multi-class classification
+model.add(Dense(39, activation='softmax'))
 
 # Print a summary of the model architecture
 model.summary()
@@ -100,6 +102,7 @@ train_generator = train_datagen.flow_from_directory(
                         target_size=(nrow, ncol),  # Resize images to 200x200
                         batch_size=batch_size_tr,  # Batch size
                         class_mode='sparse')  # Use sparse labels (integers)
+print(train_generator.class_indices)  # This prints the assigned labels
 
 # Define the directory containing the test images
 test_data_dir = 'timit_mel_images_test'
